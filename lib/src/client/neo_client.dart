@@ -1,6 +1,7 @@
 library neo4dart.neo_client;
 
 import 'package:http/http.dart' show Client;
+import 'package:neo4driver/src/model/param.dart';
 
 import '../../neo4driver.dart';
 import '../entity/path.dart';
@@ -160,6 +161,15 @@ class NeoClient {
   Future<List<Node>> findAllNodesByLabel(String label) async {
     if (label != "" && label.isNotEmpty) {
       return _neoService.findAllNodesByLabel(label.replaceAll(' ', ''));
+    } else {
+      throw NoLabelNodeException(cause: "Label must be defined");
+    }
+  }
+
+  Future<List<Node>> rawQuery(String query,
+      {List<Param> params = const []}) async {
+    if (query != "" && query.isNotEmpty) {
+      return _neoService.rawQuery(query, params: params);
     } else {
       throw NoLabelNodeException(cause: "Label must be defined");
     }

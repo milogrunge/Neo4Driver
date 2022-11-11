@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart';
+import 'package:neo4driver/src/model/param.dart';
 
 import '../../neo4driver.dart';
 import '../entity/path.dart';
@@ -276,6 +277,27 @@ class NeoService {
     final convertedResult = EntityUtil.convertResponseToNodeList(result);
 
     return convertedResult.isNotEmpty ? convertedResult.first : null;
+  }
+
+  Future<List<Node>> rawQuery(String query,
+      {List<Param> params = const []}) async {
+    query = bindParams(query, params: params);
+
+    final result = await _cypherExecutor.executeQuery(
+      method: HTTPMethod.post,
+      query: query,
+    );
+
+    return EntityUtil.convertResponseToNodeList(result);
+  }
+
+  String bindParams(String query, {List<Param> params = const []}) {
+    for (var param in params) {
+      RegExp exp = RegExp(r'([\\s\\n]@${param.name})+[\\s\\n]');
+      query = query.replaceAll(exp, param.value);
+    }
+
+    return query;
   }
 
   /// Find all nodes with given [propertiesWithEqualityOperator]
